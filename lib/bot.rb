@@ -43,6 +43,16 @@ def main
     end
   end
 
+  bot.message(start_with: 'break', in: '#bot-channel') do |event|
+    minutes = event.content.split(/ /)
+    event.respond "Taking a break for #{minutes[1]} minutes!"
+    event.respond 'Just relax!'
+
+    start_session(minutes[1].to_i)
+
+    event.respond 'Time is up! Start a pomodoro session again!'
+  end
+
   bot.message(content: 'help') do |event|
     event.respond 'This is a pomodoro bot made by Toby. To start a pomodoro session just type pom plus the time of your session in minutes.'
     event.respond 'Example: pom 25 or break 5!'
@@ -55,8 +65,9 @@ def main
 end
 
 def start_session(minutes)
-  p pomodoro_time = Time.new + (minutes * 60) + 2
+  pomodoro_time = Time.new + (minutes * 60) - 2
   current_time = Time.new
+  p pomodoro_time
 
   until current_time >= pomodoro_time
     current_time = Time.new
