@@ -28,24 +28,23 @@ bot.message(start_with: 'pom', in: "#bot-channel") do |event|
   channel = event.user.voice_channel
 
   channel.users.each do |user|
-    user.pm("Starting Pomodoro for #{minutes[1]} minutes")
+    p user
+    user.pm("Starting Pomodoro for #{minutes[1]} minutes") unless user.username == 'Groovy'
   end
 
-  p channel
-  p channel.users
-  pomo_time = Time.new + minutes[1].to_i
+  pomo_time = Time.new + (minutes[1].to_i * 60)
   time = Time.new
-  p pomo_time
+  p "Pomotime: #{pomo_time}"
 
   until time >= pomo_time
     time = Time.new
-    p time
+    p "Current_Time: #{time}"
     sleep(60)
   end
 
   event.respond 'Pomodoro Session finished! Take a break!'
   channel.users.each do |user|
-    user.pm("Finished Pomodoro for #{minutes[1]} minutes! Nice!")
+    user.pm("Finished Pomodoro for #{minutes[1]} minutes! Nice!") unless user.username == 'Groovy'
   end
 end
 
