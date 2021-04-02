@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 require 'discordrb'
-require 'yaml'
 
-# After creating the bot, create a confg.yaml file in the root directory of this project
-# this line loads the secret bot token from that file
-# put the config.yaml into the gitignore file. That way the token is not exposed if you push your repo to e.g Github.
-CONFIG = YAML.load_file('config.yaml')
+# After creating the bot, create a ENV var on your system
+# this line loads the secret bot token from that ENV variable
+# You could also put a config.yaml with the bot token in this direcotry,
+# but be aware to load the yaml file instead of the ENV var
+# That way the token is not exposed if you push your repo to e.g Github!
 
 def main
-  bot = Discordrb::Bot.new token: CONFIG['token'], parse_self: true
+  bot = Discordrb::Bot.new token: ENV['token'], parse_self: true
   # Here we output the invite URL to the console so the bot account can be invited to the channel. This only has to be
   # done once, afterwards, you can remove this part if you want
 
@@ -24,7 +24,7 @@ def main
   end
 
   # Start a pomodoro session for X minutes and ignores other bots
-  # This bot only responds to messages in the #bot-channel text channel 
+  # This bot only responds to messages in the #bot-channel text channel
   # to reduce spam. Remove that line to call the bot from any channel
   bot.message(start_with: 'pom', in: '#bot-channel') do |event|
     channel = event.user.voice_channel
