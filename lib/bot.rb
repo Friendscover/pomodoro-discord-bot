@@ -9,8 +9,7 @@ require 'yaml'
 CONFIG = YAML.load_file('config.yaml')
 
 def main
-  bot = Discordrb::Bot.new token: CONFIG['token']
-
+  bot = Discordrb::Bot.new token: CONFIG['token'], parse_self: true
   # Here we output the invite URL to the console so the bot account can be invited to the channel. This only has to be
   # done once, afterwards, you can remove this part if you want
 
@@ -25,21 +24,35 @@ def main
   end
 
   # Start a pomodoro session for X minutes and ignores other bots
+  # This bot only responds to messages in the #bot-channel text channel 
+  # to reduce spam. Remove that line to call the bot from any channel
   bot.message(start_with: 'pom', in: '#bot-channel') do |event|
-    minutes = event.content.split(/ /)
-    event.respond "Starting Pomodoro for #{minutes[1]} minutes"
     channel = event.user.voice_channel
+    if channel.nil?
+      event.respond "You have to be connected to a voice channel."
+      event.respond "Try again after you joined a channel!"
+    else
+      minutes = event.content.split(/ /)
+      event.respond "Starting Pomodoro for #{minutes[1]} minutes"
 
-    channel.users.each do |user|
-      p user
-      user.pm("Starting Pomodoro for #{minutes[1]} minutes") unless user.username == 'Groovy'
-    end
+      channel.users.each do |user|
+        p user
+        user.pm("Starting Pomodoro for #{minutes[1]} minutes") unless user.username == 'Groovy'
+      end
 
-    start_session(minutes[1].to_i)
+      start_session(minutes[1].to_i)
+     
+      # bots connects to voice channel to end the session
+      # delete this line if you dont want a audio cue
+      bot.voice_connect(channel)
+      play_session_sound(event)
 
-    event.respond 'Pomodoro Session finished! Take a break!'
-    channel.users.each do |user|
-      user.pm("Finished Pomodoro for #{minutes[1]} minutes! Nice!") unless user.username == 'Groovy'
+      event.respond 'Pomodoro Session finished! Take a break!'
+      channel.users.each do |user|
+        user.pm("Finished Pomodoro for #{minutes[1]} minutes! Nice!") unless user.username == 'Groovy'
+      end
+
+      event.respond 'break 5'
     end
   end
 
@@ -74,6 +87,12 @@ def start_session(minutes)
     p "Current_Time: #{current_time}"
     sleep(60)
   end
+end
+
+def play_session_sound(event)
+  voice_bot = event.voice
+  voice_bot.play_file('data/doorbell-1.mp3')
+  voice_bot.destroy
 end
 
 main
