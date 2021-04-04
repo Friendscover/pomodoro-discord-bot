@@ -10,15 +10,14 @@ require 'discordrb'
 
 def main
   bot = Discordrb::Bot.new token: ENV['token'], parse_self: true
+
   # Here we output the invite URL to the console so the bot account can be invited to the channel. This only has to be
   # done once, afterwards, you can remove this part if you want
-
   puts "This bot's invite URL is #{bot.invite_url}."
   puts 'Click on it to invite it to your server.'
 
   # This method call adds an event handler that will be called on any message that exactly contains the string "Ping!".
   # The code inside it will be executed, and a "Pong!" response will be sent to the channel.
-
   bot.message(content: 'Ping!') do |event|
     event.respond 'Pong!'
   end
@@ -29,39 +28,32 @@ def main
   bot.message(start_with: 'pom', in: '#bot-channel') do |event|
     channel = event.user.voice_channel
     if channel.nil?
-      event.respond "You have to be connected to a voice channel."
-      event.respond "Try again after you joined a channel!"
+      event.respond 'You have to be connected to a voice channel.'
+      event.respond 'Try again after you joined a channel!'
     else
-      minutes = event.content.split(/ /)
-      event.respond "Starting Pomodoro for #{minutes[1]} minutes"
+      minutes = event.content.split(/ /)[1].to_i
+      event.respond "Starting Pomodoro for #{minutes} minutes"
 
-      channel.users.each do |user|
-        p user
-        user.pm("Starting Pomodoro for #{minutes[1]} minutes") unless user.username == 'Groovy'
-      end
+      pm_voice_channel(channel, minutes, true)
 
-      start_session(minutes[1].to_i)
-     
+      start_session(minutes)
+
       # bots connects to voice channel to end the session
       # delete this line if you dont want a audio cue
       bot.voice_connect(channel)
       play_session_sound(event)
 
-      event.respond 'Pomodoro Session finished! Take a break!'
-      channel.users.each do |user|
-        user.pm("Finished Pomodoro for #{minutes[1]} minutes! Nice!") unless user.username == 'Groovy'
-      end
+      pm_voice_channel(channel, minutes, false)
 
       event.respond 'break 5'
     end
   end
 
   bot.message(start_with: 'break', in: '#bot-channel') do |event|
-    minutes = event.content.split(/ /)
-    event.respond "Taking a break for #{minutes[1]} minutes!"
-    event.respond 'Just relax!'
+    minutes = event.content.split(/ /)[1].to_i
+    event.respond "Taking a break for #{minutes} minutes!"
 
-    start_session(minutes[1].to_i)
+    start_session(minutes)
 
     event.respond 'Time is up! Start a pomodoro session again!'
   end
@@ -77,22 +69,42 @@ def main
   bot.run
 end
 
+# Loop for pomodoro sessions. Time is calculated in seconds
+# The Loop sleeps for 1 minute and checks again if the pomodoro timne
+# (end of session is reached) => still executes +1 minutes because of the until
+# loop body executioin
 def start_session(minutes)
-  pomodoro_time = Time.new + (minutes * 60) - 2
+  pomodoro_time = Time.new + (minutes * 60)
   current_time = Time.new
-  p pomodoro_time
+  p "Pomodoro Time #{pomodoro_time}"
 
   until current_time >= pomodoro_time
-    current_time = Time.new
     p "Current_Time: #{current_time}"
     sleep(60)
+    current_time = Time.new
   end
 end
 
+# joins the current voice channel of the current user and plays the sound
+# in data/; to change the sound just replace the path with your sound path
 def play_session_sound(event)
   voice_bot = event.voice
   voice_bot.play_file('data/doorbell-1.mp3')
   voice_bot.destroy
+end
+
+# This method pm user in the voice chat at the start of the session
+# and after finishing a pomodro session.
+def pm_voice_channel(channel, minutes, session_start)
+  channel.users.each do |user|
+    next if user.username == 'Groovy'
+
+    if session_start
+      user.pm("Starting Pomodoro for #{minutes} minutes")
+    else
+      user.pm("Finished Pomodoro for #{minutes} minutes! Nice!")
+    end
+  end
 end
 
 main

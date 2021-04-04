@@ -11,6 +11,6 @@ to install all dependencies. After that, add an ENV variable for your Discord bo
 
 Running 
 
-`ruby lib/bot.rb`
+`bundle exec ruby lib/bot.rb`
 
-starts the bot. It prints the invite link for you to add it to your server. The bot starts pomodoro-sessions with the `pom X` command, where X is the duration in minutes, e.g. `pom 25`. It also starts a break for 5 minutes after finishing a session. The break timer can also be called with `break 5`.
+starts the bot. It prints the invite link for you to add it to your server. The bot starts pomodoro-sessions with the `pom X` command, where X is the duration in minutes, e.g. `pom 25`. By default it also starts a break for 5 minutes after finishing a session. The break timer can also be called with `break 5`.
