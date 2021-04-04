@@ -1,2 +1,2 @@
 bundle install 
-worker: bundle exec lib/bot.rb
+worker: bundle exec ruby lib/bot.rb
