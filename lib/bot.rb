@@ -38,13 +38,15 @@ def main
 
       start_session(minutes)
 
+      pm_voice_channel(channel, minutes, false)
+
       # bots connects to voice channel to end the session
       # delete this line if you dont want a audio cue
       bot.voice_connect(channel)
       play_session_sound(event)
 
-      pm_voice_channel(channel, minutes, false)
-
+      # Starts a five minute break after each session
+      # TODO: add an custom break time command
       event.respond 'break 5'
     end
   end
