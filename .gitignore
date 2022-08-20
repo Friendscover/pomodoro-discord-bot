@@ -1,2 +1,4 @@
 config.yaml
-data/
+daily.json
+pve.json
+wvw.json
